@@ -1,24 +1,25 @@
 import csv
 import tkinter as tk
+from tkinter import messagebox
 from sklearn.tree import DecisionTreeClassifier
 
 place_data = []
 with open('Bali Popular Destination for Tourist 2022 - Sheet1.csv', 'r', encoding='utf-8') as file:
     reader = csv.reader(file)
-    next(reader)  # Skip header
+    next(reader)
     for row in reader:
         place_data.append(row)
 
 def clean_cost_value(cost_text):
-    cost_text = cost_text.replace(',', '')  # Mengubah tanda koma
+    cost_text = cost_text.replace(',', '')
     if 'USD' in cost_text:
-        cost = cost_text.split()[0]  # Extract numeric value
+        cost = cost_text.split()[0]
         if cost.isdigit():
             return float(cost)
         else:
-            return 0.0  # Mengembalikan nilai 0.0 untuk cost value
+            return 0.0
     else:
-        return 0.0  # Mengembalikan nilai 0.0 untuk cost value
+        return 0.0
 
 def create_decision_tree():
     X_train = []
@@ -29,10 +30,10 @@ def create_decision_tree():
         reviews = float(data[4])
         cost_text = data[7]
 
-        cost = clean_cost_value(cost_text)  # Mengambil Data yang telah diolah
+        cost = clean_cost_value(cost_text)
 
         X_train.append([rating, reviews, cost])
-        y_train.append(data[0]) 
+        y_train.append(data[0])
 
     clf = DecisionTreeClassifier()
     clf.fit(X_train, y_train)
@@ -40,17 +41,14 @@ def create_decision_tree():
     return clf
 
 def select_place():
-    # mendapatkan preferences dari input fields
     rating_pref = rating_input.get()
     reviews_pref = reviews_input.get()
     cost_pref = cost_input.get()
 
-    # validasi semua inputan
     if not rating_pref or not reviews_pref or not cost_pref:
         messagebox.showwarning("Peringatan", "Mohon isi semua input.")
         return
 
-    # pengecekan jika inputan sesuai dengan yang diinginkan
     rating_valid = True
     reviews_valid = True
     cost_valid = True
@@ -89,22 +87,18 @@ def select_place():
         reviews = float(data[4])
         cost_text = data[7]
 
-        cost = clean_cost_value(cost_text)  # Preprocess cost value yang telah dilakukan diatas
+        cost = clean_cost_value(cost_text)
 
         if (rating_pref == "Semua" or (rating_pref != "Semua" and rating >= float(rating_pref))) \
                 and (reviews_pref == "Semua" or (reviews_pref != "Semua" and reviews >= float(reviews_pref))) \
                 and (cost_pref == "Semua" or (cost_pref != "Semua" and cost <= float(cost_pref))):
-            filtered_places.append(data)  # Semua Informasi 
+            filtered_places.append(data)
 
-    # Jika ada tempat wisata yang cocok
     if filtered_places:
-        # pembuatan model Tree model
         clf = create_decision_tree()
 
-        # Menampilkan prediksi tempat wisata yang paling cocok
         predictions = clf.predict([[float(rating_pref), float(reviews_pref), float(cost_pref)]])
 
-        # menampilkan text tempat wisata
         result_text = "Tempat Wisata yang Direkomendasikan:\n\n"
         for place in filtered_places:
             result_text += f"Nama Tempat: {place[0]}\n"
